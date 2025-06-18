@@ -1,9 +1,6 @@
 package in.sadhur.SecureAuth.io;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +13,6 @@ public class ProfileRequest {
     @Email(message = "Enter a valid email address")
     @NotNull(message = "Email should not be empty")
     private String email;
-    @Min(value = 6, message = "Password must be atleast 6 characters")
+    @Size(min = 6, message = "Password must be atleast 6 characters")
     private String password;
 }
