@@ -6,6 +6,7 @@ import in.sadhur.SecureAuth.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,5 +20,10 @@ public class ProfileController {
         ProfileResponse response = profileServiceObj.createProfile(request);
         // Welcome Email
         return response;
+    }
+
+    @GetMapping("/profile")
+    public ProfileResponse getProfile(@CurrentSecurityContext(expression = "authentication?.name") String email) {
+        return profileServiceObj.getProfile(email);
     }
 }

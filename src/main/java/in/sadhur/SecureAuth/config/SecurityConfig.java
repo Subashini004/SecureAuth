@@ -31,6 +31,7 @@ import java.util.List;
 public class SecurityConfig {
     private final AppUserDetailsService appUserDetailsServiceObj;
     private final JwtRequestFilter jwtRequestFilterObj;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPointObj;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,8 +42,9 @@ public class SecurityConfig {
                         .permitAll().anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .logout(AbstractHttpConfigurer::disable)
-                .addFilterBefore(jwtRequestFilterObj, UsernamePasswordAuthenticationFilter.class);
-                return http.build();
+                .addFilterBefore(jwtRequestFilterObj, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPointObj));
+        return http.build();
     }
 
     @Bean
