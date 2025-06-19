@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1.0")
 public class ProfileController {
     private final ProfileService profileServiceObj;
 
