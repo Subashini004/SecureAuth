@@ -3,6 +3,7 @@ package in.sadhur.SecureAuth.controller;
 import in.sadhur.SecureAuth.io.AuthRequest;
 import in.sadhur.SecureAuth.io.AuthResponse;
 import in.sadhur.SecureAuth.service.AppUserDetailsService;
+import in.sadhur.SecureAuth.service.ProfileService;
 import in.sadhur.SecureAuth.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -13,10 +14,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManagerObj;
     private final AppUserDetailsService appUserDetailsServiceObj;
     private final JwtUtil jwtUtilObj;
+    private final ProfileService profileServiceObj;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
@@ -65,4 +67,20 @@ public class AuthController {
     private void authenticate(String email, String password) {
         authenticationManagerObj.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     }
+
+
+    @GetMapping("/is-authenticated")
+    public ResponseEntity<Boolean> isAuthenticated(@CurrentSecurityContext(expression = "authentication?.name") String email) {
+        return ResponseEntity.ok(email != null);
+    }
+
+    @PostMapping("/send-reset-otp")
+    public void sendResetOtp(@RequestParam String email) {
+        try {
+            profileServiceObj.sendResetOtp(email);
+        } catch (Exception ex){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
+
 }

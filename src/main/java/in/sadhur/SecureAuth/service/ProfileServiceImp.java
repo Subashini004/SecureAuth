@@ -12,12 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
 public class ProfileServiceImp implements ProfileService{
     private final UserRepository userRepositoryObj;
     private final PasswordEncoder passwordEncoderObj;
+    private final EmailService emailServiceObj;
 
     @Override
     public ProfileResponse createProfile(ProfileRequest request) {
@@ -34,6 +36,31 @@ public class ProfileServiceImp implements ProfileService{
         UserEntity existingUser = userRepositoryObj.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
         return convertToProfileResponse(existingUser);
+    }
+
+    @Override
+    public void sendResetOtp(String email) {
+        UserEntity existingEntity = userRepositoryObj.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        //Otp Generation
+        String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+
+        //Expire Time
+        long expireTime = System.currentTimeMillis() + (15 * 60 * 1000);
+
+        //Update the Profile
+        existingEntity.setResetOtp(otp);
+        existingEntity.setResetOtpExpireAt(expireTime);
+
+        //Save it in Database
+        userRepositoryObj.save(existingEntity);
+
+        try {
+            emailServiceObj.sendResetOtpEmail(existingEntity.getEmail(), otp);
+        } catch (Exception ex) {
+            throw new RuntimeException("Unable to send email.");
+        }
     }
 
     private UserEntity convertToUserEntity(ProfileRequest request) {
