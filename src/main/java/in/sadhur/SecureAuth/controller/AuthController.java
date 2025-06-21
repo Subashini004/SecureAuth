@@ -95,4 +95,12 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/send-otp")
+    public void sendVerifyOtp(@CurrentSecurityContext(expression = "authentication?.name")String email) {
+        try {
+            profileServiceObj.sendOtp(email);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
 }

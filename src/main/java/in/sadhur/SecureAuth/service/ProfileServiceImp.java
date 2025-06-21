@@ -80,6 +80,48 @@ public class ProfileServiceImp implements ProfileService{
         userRepositoryObj.save(existingUser);
     }
 
+    @Override
+    public void sendOtp(String email) {
+        UserEntity existingUser = userRepositoryObj.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        if (existingUser.getIsAccountVerified() != null && existingUser.getIsAccountVerified()) {
+            return;
+        }
+
+        // Generate OTP
+        String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+
+        //Expire Time
+        long expireTime = System.currentTimeMillis() + (24 * 60 * 60 * 1000);
+
+        //Update the user entity
+        existingUser.setVerifyOtp(otp);
+        existingUser.setVerifyOtpExpireAt(expireTime);
+
+        //Save in DB
+        userRepositoryObj.save(existingUser);
+
+        try {
+            emailServiceObj.sendVerifyOtp(existingUser.getEmail(), otp);
+        } catch (Exception ex) {
+            throw new RuntimeException("Unable to send Email");
+        }
+    }
+
+    @Override
+    public void verifyOtp(String email, String otp) {
+
+    }
+
+    @Override
+    public String getLoggedInUserId(String email) {
+        UserEntity existingUser = userRepositoryObj.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        return existingUser.getUserId();
+    }
+
     private UserEntity convertToUserEntity(ProfileRequest request) {
         return UserEntity.builder()
                 .email(request.getEmail())
