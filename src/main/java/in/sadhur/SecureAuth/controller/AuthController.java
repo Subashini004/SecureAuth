@@ -2,10 +2,13 @@ package in.sadhur.SecureAuth.controller;
 
 import in.sadhur.SecureAuth.io.AuthRequest;
 import in.sadhur.SecureAuth.io.AuthResponse;
+import in.sadhur.SecureAuth.io.ResetPasswordRequest;
 import in.sadhur.SecureAuth.service.AppUserDetailsService;
 import in.sadhur.SecureAuth.service.ProfileService;
 import in.sadhur.SecureAuth.util.JwtUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -79,6 +82,15 @@ public class AuthController {
         try {
             profileServiceObj.sendResetOtp(email);
         } catch (Exception ex){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            profileServiceObj.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+        } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         }
     }
