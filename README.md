@@ -67,7 +67,6 @@ http://localhost:8080
 ### Prerequisites
 
 - Java 17+
-- Node.js and npm
 - MySQL
 - Maven
 
